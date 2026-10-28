@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+@theme {
+  --color-vortex-black: #111111;
+  --color-vortex-tiffany: #31DDED;
+  --color-vortex-green: #00B25C;
+  --color-vortex-teal: #23919B;
+  --color-vortex-gray: #D6D9DB;
+  --font-title: "Archivo Black", sans-serif;
+  --font-body: "Barlow", sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+}
