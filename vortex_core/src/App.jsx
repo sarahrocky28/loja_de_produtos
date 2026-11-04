@@ -1,8 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import Layout from './componentes/Layout'
 
-// Página provisória. Conforme você for criando as páginas de verdade,
-// troque cada <Pagina titulo="..."/> pelo componente real (ex.: <Home />).
+
 function Pagina({ titulo }) {
   return (
     <div className="mx-auto max-w-6xl px-4 py-16">
