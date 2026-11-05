@@ -40,11 +40,11 @@ export default function Header() {
         Frete grátis acima de {FRETE_GRATIS} • No centro da sua evolução
       </div>
 
-      <header className="sticky top-0 z-50 bg-[#1a1a1a] text-white">
+      <header className="sticky top-0 z-50 bg-[#000000] text-white">
         <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center px-4 py-3 md:grid-cols-[1fr_auto_1fr] md:px-8">
           <Link to="/" aria-label="Vortex Core - Início" className="justify-self-start">
             <img
-              src="/logo.png"
+              src="/vortex-core-logo-recortada.png"
               alt="Vortex Core"
               className="h-10 w-auto md:h-12"
             />
