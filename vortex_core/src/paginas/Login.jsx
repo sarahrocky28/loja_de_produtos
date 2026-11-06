@@ -19,7 +19,6 @@ export default function Login() {
     setEnviando(true)
     try {
       const usuario = await entrar(email, senha)
-      // volta para onde o cliente estava (ex.: o carrinho) ou vai para o início
       navigate(usuario.perfil === 'admin' ? '/admin' : local.state?.de || '/', { replace: true })
     } catch (err) {
       setErro(err.message)

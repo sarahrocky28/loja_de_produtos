@@ -28,7 +28,6 @@ export default function Carrinho() {
     api('/config').then(setConfig).catch(() => {})
   }, [])
 
-  // Carrinho vazio
   if (itens.length === 0) {
     return (
       <div className={`${paginaClasse} px-4 py-24 text-center`}>
@@ -60,7 +59,7 @@ export default function Carrinho() {
       await api('/endereco', { method: 'PUT', corpo: endereco })
       const d = await api('/pedidos', { method: 'POST', corpo: { metodo } })
       if (d.init_point) {
-        window.location.href = d.init_point // vai para o pagamento no Mercado Pago
+        window.location.href = d.init_point 
       } else {
         navigate(`/pedido-confirmado?pedido=${d.id_pedido}`, { state: { aviso: d.aviso } })
       }
@@ -79,7 +78,7 @@ export default function Carrinho() {
 
         <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_360px]">
           <div className="space-y-8">
-            {/* Itens */}
+            
             <div className="space-y-3">
               {itens.map((i) => (
                 <article key={i.id} className={`${cartaoClasse} flex items-center gap-4 !p-3`}>
@@ -98,14 +97,14 @@ export default function Carrinho() {
               ))}
             </div>
 
-            {/* Endereço */}
+            
             <div>
               <h2 className="mb-3 text-lg font-extrabold uppercase">Endereço</h2>
               <EnderecoForm valor={endereco} onChange={setEndereco} />
             </div>
           </div>
 
-          {/* Pagamento e resumo */}
+          
           <aside className="space-y-4">
             <div className={cartaoClasse}>
               <h2 className="mb-3 text-sm font-extrabold uppercase">Formas de pagamento</h2>

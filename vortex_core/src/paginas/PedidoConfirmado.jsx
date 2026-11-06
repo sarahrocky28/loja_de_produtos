@@ -4,7 +4,6 @@ import { FiCheckCircle, FiClock, FiXCircle } from 'react-icons/fi'
 import { api } from '../api'
 import { botaoClasse, paginaClasse } from '../estilos'
 
-// O Mercado Pago devolve o cliente para cá: /pedido-confirmado?pedido=12&payment_id=...&status=approved
 export default function PedidoConfirmado() {
   const [params] = useSearchParams()
   const local = useLocation()

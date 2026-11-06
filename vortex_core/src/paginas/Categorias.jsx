@@ -13,7 +13,7 @@ const ABAS = [
   { chave: 'roupas', rotulo: 'Roupas' },
 ]
 
-// Serve para /categorias e /produtos (com ?categoria=suplementos&busca=whey)
+
 export default function Categorias() {
   const [params, setParams] = useSearchParams()
   const categoria = params.get('categoria') || 'todos'

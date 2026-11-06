@@ -35,7 +35,6 @@ function Titulo({ children, className = '' }) {
 export default function Home() {
   const [produtosDestaque, setProdutosDestaque] = useState([])
 
-  // Os 4 primeiros produtos do banco aparecem em destaque
   useEffect(() => {
     api('/produtos?limite=4')
       .then((d) => setProdutosDestaque(d.produtos))
@@ -44,7 +43,7 @@ export default function Home() {
 
   return (
     <div className="bg-black text-white">
-      {/* BANNER PRINCIPAL: exporte a arte do Figma como public/hero.png */}
+      
       <section className="bg-black">
         <img
           src="/hero.png"
@@ -53,7 +52,7 @@ export default function Home() {
         />
       </section>
 
-      {/* PRODUTOS EM DESTAQUE */}
+      
       <section className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">
         <Titulo>
           Conheça os melhores do <span className="text-[#35dcee]">momento</span>
@@ -65,7 +64,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BENEFÍCIOS */}
+      
       <section className="border-y border-white/10 px-4 py-8">
         <ul className="mx-auto grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3">
           {beneficios.map(({ Icone, titulo, texto }) => (
@@ -80,7 +79,7 @@ export default function Home() {
         </ul>
       </section>
 
-      {/* ESCOLHA O SEU FOCO: coloque a foto de fundo em public/academia.jpg */}
+      
       <section
         className="relative bg-neutral-900 bg-cover bg-center"
         style={{ backgroundImage: "url('/academia.jpg')" }}
@@ -106,7 +105,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* AVALIAÇÕES */}
+      
       <section className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">
         <Titulo>O que os clientes dizem</Titulo>
         <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">

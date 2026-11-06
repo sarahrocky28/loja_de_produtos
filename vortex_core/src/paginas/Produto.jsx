@@ -16,7 +16,7 @@ export default function Produto() {
   const local = useLocation()
 
   const [produto, setProduto] = useState(null)
-  const [estado, setEstado] = useState('carregando') // carregando | ok | naoEncontrado | erro
+  const [estado, setEstado] = useState('carregando') 
   const [qtd, setQtd] = useState(1)
   const [mensagem, setMensagem] = useState('')
 

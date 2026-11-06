@@ -64,7 +64,7 @@ export default function Perfil() {
   return (
     <div className={`${paginaClasse} px-4 py-10 md:px-8`}>
       <div className="mx-auto max-w-4xl space-y-10">
-        {/* Dados pessoais */}
+        
         <section>
           <h1 className="text-2xl font-extrabold uppercase">Seu perfil</h1>
           <div className={`${cartaoClasse} mt-4`}>
@@ -101,7 +101,7 @@ export default function Perfil() {
           </div>
         </section>
 
-        {/* Endereço */}
+        
         <section>
           <h2 className="text-xl font-extrabold uppercase">Endereço</h2>
           <form onSubmit={salvarEndereco} className={`${cartaoClasse} mt-4 space-y-4`}>
@@ -113,7 +113,7 @@ export default function Perfil() {
           </form>
         </section>
 
-        {/* Pedidos */}
+        
         <section>
           <h2 className="text-xl font-extrabold uppercase">Meus pedidos</h2>
           {msg.pedidos && <p className="mt-2 text-sm text-[#35dcee]">{msg.pedidos}</p>}
