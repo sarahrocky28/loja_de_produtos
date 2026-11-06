@@ -1,20 +1,10 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { api } from '../api'
 import { FiTruck, FiCreditCard, FiZap } from 'react-icons/fi'
 import { FaDumbbell, FaPrescriptionBottle, FaTshirt, FaStar } from 'react-icons/fa'
 import CardProduto from '../componentes/CardProduto'
 import { FRETE_GRATIS_ACIMA } from '../config'
-
-// ---------------------------------------------------------------
-// DADOS PROVISÓRIOS. Quando o back-end estiver pronto, os produtos
-// virão de GET /produtos (preço em centavos, igual ao banco).
-// As imagens ficam na pasta public/ (ex.: public/produtos/whey.png)
-// ---------------------------------------------------------------
-const produtosDestaque = [
-  { id: 1, nome: 'Whey Monohidratado', preco: 16640, imagem: '/produtos/whey.png' },
-  { id: 2, nome: 'Whey Monohidratado', preco: 16640, imagem: '/produtos/whey.png' },
-  { id: 3, nome: 'Whey Monohidratado', preco: 16640, imagem: '/produtos/whey.png' },
-  { id: 4, nome: 'Whey Monohidratado', preco: 16640, imagem: '/produtos/whey.png' },
-]
 
 const beneficios = [
   { Icone: FiTruck, titulo: 'Frete grátis', texto: `Acima de ${FRETE_GRATIS_ACIMA}` },
@@ -43,6 +33,15 @@ function Titulo({ children, className = '' }) {
 }
 
 export default function Home() {
+  const [produtosDestaque, setProdutosDestaque] = useState([])
+
+  // Os 4 primeiros produtos do banco aparecem em destaque
+  useEffect(() => {
+    api('/produtos?limite=4')
+      .then((d) => setProdutosDestaque(d.produtos))
+      .catch(() => setProdutosDestaque([]))
+  }, [])
+
   return (
     <div className="bg-black text-white">
       {/* BANNER PRINCIPAL: exporte a arte do Figma como public/hero.png */}

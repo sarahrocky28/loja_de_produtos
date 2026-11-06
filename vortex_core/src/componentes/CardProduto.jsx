@@ -2,8 +2,6 @@ import { Link } from 'react-router-dom'
 import { FiShoppingCart } from 'react-icons/fi'
 import { formatarPreco } from '../utils/formatarPreco'
 
-// produto = { id, nome, preco (em centavos), imagem }
-// onAdicionar: função chamada ao clicar no carrinho (vamos ligar ao carrinho depois)
 export default function CardProduto({ produto, onAdicionar = () => {} }) {
   return (
     <article className="flex flex-col rounded border border-[#35dcee]/60 bg-[#0d0d0d] p-3 text-white">

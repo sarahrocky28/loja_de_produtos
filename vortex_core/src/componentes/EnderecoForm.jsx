@@ -7,7 +7,6 @@ export const ENDERECO_VAZIO = {
 
 const mascaraCep = (c) => c.replace(/^(\d{5})(\d)/, '$1-$2')
 
-// Formulário de endereço (usado no perfil e no carrinho). Ao sair do CEP, preenche o resto pelo ViaCEP.
 export default function EnderecoForm({ valor, onChange }) {
   const set = (campo) => (e) => onChange({ ...valor, [campo]: e.target.value })
 
