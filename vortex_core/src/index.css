@@ -6,10 +6,15 @@
   --color-vortex-green: #00B25C;
   --color-vortex-teal: #23919B;
   --color-vortex-gray: #D6D9DB;
+
   --font-title: "Archivo Black", sans-serif;
   --font-body: "Barlow", sans-serif;
+  --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;
 }
 
-body {
-  font-family: var(--font-body);
+@layer base {
+  h1, h2, h3, h4 {
+    font-family: var(--font-title);
+    font-synthesis: none;
+  }
 }

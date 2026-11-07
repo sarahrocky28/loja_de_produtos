@@ -47,7 +47,7 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Route>
 
-      {/*Adminastro*/}
+      
       <Route path="admin" element={<AdminLayout />}>
         <Route path="login" element={<AdminLogin />} />
         <Route element={<RequireAdmin />}>
