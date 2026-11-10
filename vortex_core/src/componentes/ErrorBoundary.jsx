@@ -6,7 +6,7 @@ export default class ErrorBoundary extends Component {
 
   static getDerivedStateFromError() {
     return { erro: true }
-  }
+  }cidade
 
   componentDidCatch(erro) {
     console.error(erro)

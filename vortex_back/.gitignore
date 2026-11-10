@@ -1,0 +1,5 @@
+node_modules
+.env
+db/vortex.sqlite*
+uploads/*
+!uploads/.gitkeep
