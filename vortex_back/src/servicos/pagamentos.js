@@ -14,8 +14,6 @@ const STATUS = {
 }
 const METODO = { bank_transfer: 'pix', credit_card: 'cartao', debit_card: 'cartao', ticket: 'boleto' }
 
-// Recebe um pagamento do Mercado Pago e atualiza pagamento + pedido + estoque.
-// Pode ser chamada várias vezes para o mesmo pagamento (webhook + retorno do cliente) sem duplicar a baixa.
 function aplicarPagamento(pg) {
   const idPedido = Number(pg.external_reference)
   const pedido = db.prepare('SELECT * FROM pedidos WHERE id_pedido = ?').get(idPedido)
@@ -50,7 +48,6 @@ function aplicarPagamento(pg) {
       ).run(idPedido, mpId, metodoNovo || 'pix', status, pedido.total, status)
     }
 
-    // Pagamento aprovado pela primeira vez: pedido vira "pago" e o estoque é baixado
     if (status === 'aprovado' && !jaAprovado) {
       const atualizou = db
         .prepare("UPDATE pedidos SET status = 'pago' WHERE id_pedido = ? AND status = 'aguardando_pagamento'")
@@ -66,7 +63,6 @@ function aplicarPagamento(pg) {
   return db.prepare('SELECT status FROM pedidos WHERE id_pedido = ?').get(idPedido)
 }
 
-// Gera o link de pagamento de um pedido que está aguardando pagamento
 async function iniciarPagamento(idPedido, usuario, metodo) {
   if (!mp.configurado()) {
     return { aviso: 'O Mercado Pago ainda não está configurado no servidor. O pedido foi criado e aguarda pagamento.' }

@@ -20,6 +20,9 @@ SELECT sqlite_version();
 DROP VIEW IF EXISTS vw_estoque_baixo;
 DROP VIEW IF EXISTS vw_catalogo;
 DROP VIEW IF EXISTS vw_pedidos_resumo;
+DROP TABLE IF EXISTS redefinicoes_senha;
+DROP TABLE IF EXISTS favoritos;
+DROP TABLE IF EXISTS produto_imagens;
 DROP TABLE IF EXISTS mensagens_contato;
 DROP TABLE IF EXISTS pagamentos;
 DROP TABLE IF EXISTS itens_pedido;
@@ -108,6 +111,7 @@ CREATE TABLE pedidos (
 	subtotal INTEGER NOT NULL,
 	desconto INTEGER NOT NULL DEFAULT 0,
 	frete INTEGER NOT NULL DEFAULT 0,
+	entrega TEXT NOT NULL DEFAULT 'padrao' CHECK (entrega IN ('padrao', 'expressa', 'retirada')),
 	total INTEGER NOT NULL,
 	status TEXT NOT NULL DEFAULT 'aguardando_pagamento' CHECK (status IN ('aguardando_pagamento', 'pago', 'em_separacao', 'enviado', 'entregue', 'cancelado')),
 	codigo_rastreio TEXT,
@@ -154,6 +158,36 @@ CREATE TABLE mensagens_contato (
 	email TEXT NOT NULL,
 	mensagem TEXT NOT NULL,
 	criado_em TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+) STRICT;
+
+
+-- Varias imagens por produto (a de ordem 0 e a principal; produtos.imagem guarda a principal)
+CREATE TABLE produto_imagens (
+	id_imagem INTEGER PRIMARY KEY AUTOINCREMENT,
+	id_produto INTEGER NOT NULL,
+	arquivo TEXT NOT NULL,
+	ordem INTEGER NOT NULL DEFAULT 0,
+	FOREIGN KEY (id_produto) REFERENCES produtos(id_produto) ON DELETE CASCADE
+) STRICT;
+
+-- Produtos favoritos de cada usuario
+CREATE TABLE favoritos (
+	id_usuario INTEGER NOT NULL,
+	id_produto INTEGER NOT NULL,
+	criado_em TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+	PRIMARY KEY (id_usuario, id_produto),
+	FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+	FOREIGN KEY (id_produto) REFERENCES produtos(id_produto) ON DELETE CASCADE
+) STRICT;
+
+-- Links de "esqueci a senha" (guarda so o hash do codigo, nunca o codigo)
+CREATE TABLE redefinicoes_senha (
+	id_redefinicao INTEGER PRIMARY KEY AUTOINCREMENT,
+	id_usuario INTEGER NOT NULL,
+	token_hash TEXT NOT NULL UNIQUE,
+	expira_em TEXT NOT NULL,
+	usado INTEGER NOT NULL DEFAULT 0 CHECK (usado IN (0, 1)),
+	FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
 ) STRICT;
 
 -- ==========================================================
@@ -204,6 +238,10 @@ INSERT INTO produtos (id_categoria, nome, descricao, preco, estoque, imagem) VAL
 	(6, 'Kit 3 Faixas Elásticas', 'Faixas de resistência leve, média e forte.', 3490, 0, 'faixas-elasticas.jpg'),
 	(7, 'Camiseta Vortex Core Preta', 'Camiseta dry fit com a marca Vortex Core.', 7990, 30, 'camiseta-vortex.jpg'),
 	(7, 'Regata Vortex Core', 'Regata leve para treinos intensos.', 6990, 25, 'regata-vortex.jpg');
+
+-- 2.4.1. Imagens dos produtos (a principal de cada um)
+INSERT INTO produto_imagens (id_produto, arquivo, ordem)
+SELECT id_produto, imagem, 0 FROM produtos WHERE imagem IS NOT NULL;
 
 -- 2.5. Cupons (valor_desconto: percentual = %, valor_fixo = centavos)
 INSERT INTO cupons (codigo, tipo_desconto, valor_desconto, validade, ativo) VALUES

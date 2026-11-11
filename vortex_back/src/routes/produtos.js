@@ -3,7 +3,6 @@ const db = require('../db')
 
 const router = express.Router()
 
-// As abas do layout (Suplementos, Acessórios, Roupas) agrupam categorias do banco
 const GRUPOS = {
   suplementos: ['Proteínas', 'Creatinas', 'Pré-treinos e Energia', 'Aminoácidos', 'Vitaminas e Minerais'],
   acessorios: ['Acessórios'],
@@ -51,7 +50,11 @@ router.get('/:id', (req, res) => {
     .get(req.params.id)
   if (!produto) return res.status(404).json({ erro: 'Produto não encontrado.' })
   const grupo = grupoDaCategoria(produto.categoria)
-  res.json({ produto: { ...produto, grupo: grupo ? NOME_GRUPO[grupo] : produto.categoria } })
+  const imagens = db
+    .prepare('SELECT arquivo FROM produto_imagens WHERE id_produto = ? ORDER BY ordem, id_imagem')
+    .all(produto.id)
+    .map((i) => i.arquivo)
+  res.json({ produto: { ...produto, imagens, grupo: grupo ? NOME_GRUPO[grupo] : produto.categoria } })
 })
 
 module.exports = router

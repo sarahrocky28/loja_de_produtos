@@ -1,6 +1,5 @@
 const db = require('../db')
 
-// Monta um pedido com itens e último pagamento
 function pedidoCompleto(p) {
   const itens = db
     .prepare(

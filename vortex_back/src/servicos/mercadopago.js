@@ -9,14 +9,12 @@ function cliente() {
   return new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN })
 }
 
-// Tipos de pagamento que NÃO aparecem na tela do Mercado Pago, conforme a escolha do cliente
 const EXCLUIR = {
   pix: [{ id: 'credit_card' }, { id: 'debit_card' }, { id: 'ticket' }, { id: 'atm' }],
   cartao: [{ id: 'ticket' }, { id: 'bank_transfer' }, { id: 'atm' }],
   boleto: [{ id: 'credit_card' }, { id: 'debit_card' }, { id: 'bank_transfer' }, { id: 'atm' }],
 }
 
-// Cria o "link de pagamento" (Checkout Pro) e devolve a URL para onde o cliente deve ir
 async function criarPreferencia({ pedido, itens, metodo, email }) {
   const { frontUrl, backUrl } = cfg()
   const lista = itens.map((i) => ({
@@ -39,7 +37,6 @@ async function criarPreferencia({ pedido, itens, metodo, email }) {
     payment_methods: { excluded_payment_types: EXCLUIR[metodo] || [] },
     statement_descriptor: 'VORTEX CORE',
   }
-  // O Mercado Pago só aceita estes dois campos com endereços https (ex.: ngrok ou site publicado)
   if (frontUrl.startsWith('https://')) corpo.auto_return = 'approved'
   if (backUrl.startsWith('https://')) corpo.notification_url = `${backUrl}/api/pagamentos/webhook`
 

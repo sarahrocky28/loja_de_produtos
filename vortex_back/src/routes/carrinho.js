@@ -15,7 +15,6 @@ function listar(idUsuario) {
     .all(idUsuario)
 }
 
-// Confere produto ativo e estoque; devolve mensagem de erro ou null
 function validar(idProduto, quantidade) {
   const p = db.prepare('SELECT nome, estoque, ativo FROM produtos WHERE id_produto = ?').get(idProduto)
   if (!p || !p.ativo) return 'Produto indisponível.'
@@ -27,7 +26,6 @@ function validar(idProduto, quantidade) {
 
 router.get('/', (req, res) => res.json({ itens: listar(req.usuario.id_usuario) }))
 
-// Adiciona (soma à quantidade que já existe)
 router.post('/', (req, res) => {
   const idProduto = Number(req.body.id_produto)
   const qtd = Math.floor(Number(req.body.quantidade) || 1)
@@ -47,7 +45,6 @@ router.post('/', (req, res) => {
   res.json({ itens: listar(req.usuario.id_usuario) })
 })
 
-// Define a quantidade exata (0 remove)
 router.put('/:id', (req, res) => {
   const idProduto = Number(req.params.id)
   const qtd = Math.floor(Number(req.body.quantidade))

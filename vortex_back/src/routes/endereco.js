@@ -12,7 +12,6 @@ router.get('/', (req, res) => {
   res.json({ endereco: db.prepare(SELECT).get(req.usuario.id_usuario) || null })
 })
 
-// Cria ou atualiza o endereço principal do usuário
 router.put('/', (req, res) => {
   const b = req.body
   const dados = {

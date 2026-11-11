@@ -10,7 +10,6 @@ router.use(exigirLogin)
 
 const METODOS = ['pix', 'cartao', 'boleto']
 
-// Meus pedidos
 router.get('/', (req, res) => {
   const linhas = db
     .prepare('SELECT * FROM pedidos WHERE id_usuario = ? ORDER BY id_pedido DESC')
@@ -26,7 +25,6 @@ router.get('/:id', (req, res) => {
   res.json({ pedido: pedidoCompleto(p) })
 })
 
-// Finalizar compra: cria o pedido a partir do carrinho e abre o pagamento
 router.post('/', async (req, res) => {
   const metodo = req.body.metodo
   if (!METODOS.includes(metodo)) return res.status(400).json({ erro: 'Escolha uma forma de pagamento.' })
@@ -51,18 +49,20 @@ router.post('/', async (req, res) => {
     .get(u.id_usuario)
   if (!endereco) return res.status(400).json({ erro: 'Cadastre o endereço de entrega.' })
 
-  // Os valores são sempre calculados aqui, com os preços do banco (nunca confiamos no que vem do navegador)
   const subtotal = itens.reduce((s, i) => s + i.quantidade * i.preco, 0)
-  const { frete, prazoDias } = calcularFrete(subtotal)
+  const entrega = req.body.entrega || 'padrao'
+  const calculo = calcularFrete(subtotal, entrega)
+  if (!calculo) return res.status(400).json({ erro: 'Forma de entrega inválida.' })
+  const { frete, prazoDias } = calculo
   const total = subtotal + frete
 
   const criar = db.transaction(() => {
     const r = db
       .prepare(
-        `INSERT INTO pedidos (id_usuario, id_endereco, subtotal, desconto, frete, total, previsao_entrega)
-         VALUES (?, ?, ?, 0, ?, ?, DATE('now', 'localtime', ?))`
+        `INSERT INTO pedidos (id_usuario, id_endereco, subtotal, desconto, frete, entrega, total, previsao_entrega)
+         VALUES (?, ?, ?, 0, ?, ?, ?, DATE('now', 'localtime', ?))`
       )
-      .run(u.id_usuario, endereco.id_endereco, subtotal, frete, total, `+${prazoDias} days`)
+      .run(u.id_usuario, endereco.id_endereco, subtotal, frete, entrega, total, `+${prazoDias} days`)
     const idPedido = Number(r.lastInsertRowid)
     const inserirItem = db.prepare(
       'INSERT INTO itens_pedido (id_pedido, id_produto, quantidade, preco_unitario) VALUES (?, ?, ?, ?)'
@@ -77,7 +77,6 @@ router.post('/', async (req, res) => {
   res.status(201).json({ id_pedido: idPedido, ...(await iniciarPagamento(idPedido, u, metodo)) })
 })
 
-// Pagar de novo um pedido que ainda aguarda pagamento
 router.post('/:id/pagar', async (req, res) => {
   const p = db
     .prepare('SELECT * FROM pedidos WHERE id_pedido = ? AND id_usuario = ?')

@@ -6,8 +6,7 @@ const { exigirLogin } = require('../middleware/auth')
 
 const router = express.Router()
 
-// O Mercado Pago avisa aqui quando um pagamento muda de status.
-// Não confiamos no que chega: sempre perguntamos o status real ao Mercado Pago.
+
 router.post('/webhook', async (req, res) => {
   res.sendStatus(200)
   try {
@@ -20,8 +19,6 @@ router.post('/webhook', async (req, res) => {
   }
 })
 
-// Chamado pela tela "Pedido confirmado" quando o cliente volta do Mercado Pago.
-// Funciona mesmo sem webhook (por exemplo, rodando só no seu computador).
 router.post('/sincronizar', exigirLogin, async (req, res) => {
   const idPedido = Number(req.body.id_pedido)
   const pedido = db
