@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import Campo from '../componentes/Campo'
+import CampoSenha from '../componentes/CampoSenha'
 import { botaoClasse, cartaoClasse, paginaClasse } from '../estilos'
 
 export default function Cadastro() {
@@ -45,8 +46,8 @@ export default function Cadastro() {
           <Campo label="Nome" value={form.nome} onChange={set('nome')} required />
           <Campo label="Sobrenome" value={form.sobrenome} onChange={set('sobrenome')} required />
           <Campo label="E-mail" type="email" value={form.email} onChange={set('email')} required />
-          <Campo label="Senha" type="password" minLength={6} value={form.senha} onChange={set('senha')} required />
-          <Campo label="Confirmar senha" type="password" value={form.confirmar} onChange={set('confirmar')} required />
+          <CampoSenha label="Senha" minLength={6} value={form.senha} onChange={set('senha')} required />
+          <CampoSenha label="Confirmar senha" value={form.confirmar} onChange={set('confirmar')} required />
           {erro && <p className="text-sm text-red-400">{erro}</p>}
           <button type="submit" disabled={enviando} className={`${botaoClasse} w-full`}>
             {enviando ? 'Criando...' : 'Cadastrar'}

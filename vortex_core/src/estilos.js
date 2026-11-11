@@ -1,4 +1,3 @@
-
 export const inputClasse =
   'w-full rounded border border-white/30 bg-transparent px-3 py-2 text-sm text-white placeholder-white/40 outline-none focus:border-[#35dcee]'
 export const labelClasse = 'mb-1 block text-xs font-bold uppercase tracking-wide text-white/80'

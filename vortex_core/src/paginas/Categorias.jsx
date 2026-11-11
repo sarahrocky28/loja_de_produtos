@@ -13,7 +13,6 @@ const ABAS = [
   { chave: 'roupas', rotulo: 'Roupas' },
 ]
 
-
 export default function Categorias() {
   const [params, setParams] = useSearchParams()
   const categoria = params.get('categoria') || 'todos'

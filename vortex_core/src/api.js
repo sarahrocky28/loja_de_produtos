@@ -1,5 +1,5 @@
-
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
 
 export async function api(caminho, { method = 'GET', corpo, formData } = {}) {
   const headers = {}
@@ -17,7 +17,6 @@ export async function api(caminho, { method = 'GET', corpo, formData } = {}) {
   try {
     dados = await resposta.json()
   } catch {
-    /* resposta sem corpo */
   }
   if (!resposta.ok) {
     const erro = new Error(dados?.erro || 'Não foi possível falar com o servidor.')

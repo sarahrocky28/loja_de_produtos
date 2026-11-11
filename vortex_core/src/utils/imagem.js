@@ -1,6 +1,5 @@
 import { API_URL } from '../api'
 
-
 export const IMAGEM_PADRAO =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
@@ -10,11 +9,9 @@ export const IMAGEM_PADRAO =
      </svg>`
   )
 
-
 export function urlImagem(nome) {
   return nome ? `${API_URL}/uploads/${nome}` : IMAGEM_PADRAO
 }
-
 
 export function aoFalharImagem(e) {
   e.currentTarget.onerror = null

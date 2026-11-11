@@ -7,7 +7,6 @@ export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(null)
   const [carregando, setCarregando] = useState(Boolean(localStorage.getItem('vortex_token')))
 
-  // Ao abrir o site, se existe um token salvo, descobre quem é o usuário
   useEffect(() => {
     if (!localStorage.getItem('vortex_token')) return
     api('/auth/me')

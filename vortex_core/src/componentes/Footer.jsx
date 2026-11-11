@@ -50,7 +50,7 @@ const colunas = [
 export default function Footer() {
   return (
     <footer>
-      <section className="bg-[#000000] px-4 py-10 text-center text-white">
+      <section className="bg-[#1a1a1a] px-4 py-10 text-center text-white">
         <h2 className="text-lg font-bold uppercase tracking-wide md:text-xl">
           Siga a Vortex nas redes sociais
         </h2>

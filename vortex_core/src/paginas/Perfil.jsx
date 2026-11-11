@@ -4,6 +4,7 @@ import { FiUser } from 'react-icons/fi'
 import { api } from '../api'
 import { useAuth } from '../contexts/AuthContext'
 import Campo from '../componentes/Campo'
+import CampoSenha from '../componentes/CampoSenha'
 import EnderecoForm, { ENDERECO_VAZIO } from '../componentes/EnderecoForm'
 import { botaoClasse, botaoTealClasse, cartaoClasse, paginaClasse } from '../estilos'
 import { formatarPreco } from '../utils/formatarPreco'
@@ -64,7 +65,6 @@ export default function Perfil() {
   return (
     <div className={`${paginaClasse} px-4 py-10 md:px-8`}>
       <div className="mx-auto max-w-4xl space-y-10">
-        
         <section>
           <h1 className="text-2xl font-extrabold uppercase">Seu perfil</h1>
           <div className={`${cartaoClasse} mt-4`}>
@@ -89,8 +89,8 @@ export default function Perfil() {
               <form onSubmit={salvarPerfil} className="grid gap-3 sm:grid-cols-2">
                 <Campo label="Nome" value={dados.nome} onChange={(e) => setDados({ ...dados, nome: e.target.value })} required />
                 <Campo label="E-mail" type="email" value={dados.email} onChange={(e) => setDados({ ...dados, email: e.target.value })} required />
-                <Campo label="Senha atual (só para trocar a senha)" type="password" value={dados.senhaAtual} onChange={(e) => setDados({ ...dados, senhaAtual: e.target.value })} />
-                <Campo label="Nova senha (opcional)" type="password" value={dados.novaSenha} onChange={(e) => setDados({ ...dados, novaSenha: e.target.value })} />
+                <CampoSenha label="Senha atual (só para trocar a senha)" value={dados.senhaAtual} onChange={(e) => setDados({ ...dados, senhaAtual: e.target.value })} />
+                <CampoSenha label="Nova senha (opcional)" value={dados.novaSenha} onChange={(e) => setDados({ ...dados, novaSenha: e.target.value })} />
                 <div className="flex gap-2 sm:col-span-2">
                   <button type="submit" className={botaoClasse}>Salvar</button>
                   <button type="button" onClick={() => setEditando(false)} className="rounded border border-white/30 px-4 py-2 text-sm font-bold uppercase">Cancelar</button>
@@ -101,7 +101,6 @@ export default function Perfil() {
           </div>
         </section>
 
-        
         <section>
           <h2 className="text-xl font-extrabold uppercase">Endereço</h2>
           <form onSubmit={salvarEndereco} className={`${cartaoClasse} mt-4 space-y-4`}>
@@ -113,7 +112,6 @@ export default function Perfil() {
           </form>
         </section>
 
-        
         <section>
           <h2 className="text-xl font-extrabold uppercase">Meus pedidos</h2>
           {msg.pedidos && <p className="mt-2 text-sm text-[#35dcee]">{msg.pedidos}</p>}

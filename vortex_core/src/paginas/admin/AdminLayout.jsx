@@ -9,7 +9,6 @@ const links = [
   { to: '/admin/clientes', label: 'Clientes' },
 ]
 
-// Moldura do painel do administrador (Header e rodapé próprios)
 export default function AdminLayout() {
   const { usuario, sair } = useAuth()
   const navigate = useNavigate()

@@ -16,7 +16,6 @@ export function CartProvider({ children }) {
     try {
       setItens((await api('/carrinho')).itens)
     } catch {
-      /* o carrinho fica vazio se o servidor não responder */
     }
   }, [usuario])
 

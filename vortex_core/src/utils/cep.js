@@ -1,4 +1,3 @@
-
 export async function buscarCep(cep) {
   const limpo = String(cep).replace(/\D/g, '')
   if (limpo.length !== 8) return null

@@ -5,7 +5,6 @@ function Carregando() {
   return <div className="bg-black px-4 py-24 text-center text-white/70">Carregando...</div>
 }
 
-
 export function RequireAuth() {
   const { usuario, carregando } = useAuth()
   const local = useLocation()
@@ -13,7 +12,6 @@ export function RequireAuth() {
   if (!usuario) return <Navigate to="/login" replace state={{ de: local.pathname + local.search }} />
   return <Outlet />
 }
-
 
 export function RequireAdmin() {
   const { usuario, carregando } = useAuth()
