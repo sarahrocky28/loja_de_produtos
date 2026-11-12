@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { FiUser, FiSearch, FiShoppingBag, FiMenu, FiX } from 'react-icons/fi'
-
-const FRETE_GRATIS = 'R$ 215,00'
+import { FiUser, FiSearch, FiShoppingBag, FiMenu, FiX, FiHeart } from 'react-icons/fi'
+import { useAuth } from '../contexts/AuthContext'
+import { useCart } from '../contexts/CartContext'
+import { FRETE_GRATIS_ACIMA } from '../config'
 
 const links = [
   { to: '/', label: 'Início', end: true },
@@ -16,7 +17,10 @@ export default function Header() {
   const [termo, setTermo] = useState('')
   const navigate = useNavigate()
 
-  const quantidadeNoCarrinho = 0
+  const { usuario } = useAuth()
+  const { quantidade: quantidadeNoCarrinho } = useCart()
+  // Logado: vai para o perfil (ou para o painel, se for administrador). Senão, para o login.
+  const destinoConta = usuario ? (usuario.perfil === 'admin' ? '/admin' : '/perfil') : '/login'
 
   function buscar(e) {
     e.preventDefault()
@@ -36,20 +40,23 @@ export default function Header() {
 
   return (
     <>
+      {/* Faixa de cima */}
       <div className="bg-[#35dcee] px-2 py-1 text-center text-xs font-bold uppercase tracking-wide text-black sm:text-sm">
-        Frete grátis acima de {FRETE_GRATIS} • No centro da sua evolução
+        Frete grátis acima de {FRETE_GRATIS_ACIMA} • No centro da sua evolução
       </div>
 
-      <header className="sticky top-0 z-50 bg-[#000000] text-white">
+      <header className="sticky top-0 z-50 bg-[#1a1a1a] text-white">
         <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center px-4 py-3 md:grid-cols-[1fr_auto_1fr] md:px-8">
+          {/* Logo (clicável, leva para o início) */}
           <Link to="/" aria-label="Vortex Core - Início" className="justify-self-start">
             <img
-              src="/vortex-core-logo-recortada.png"
+              src="/logo.png"
               alt="Vortex Core"
               className="h-10 w-auto md:h-12"
             />
           </Link>
 
+          {/* Menu central (só no computador) */}
           <nav className="hidden items-center gap-10 md:flex" aria-label="Principal">
             {links.map((l) => (
               <NavLink key={l.to} to={l.to} end={l.end} className={classeLink}>
@@ -58,8 +65,13 @@ export default function Header() {
             ))}
           </nav>
 
+          {/* Ícones */}
           <div className="flex items-center justify-self-end gap-1">
-            <Link to="/login" aria-label="Minha conta" className={classeIcone}>
+            <Link to="/favoritos" aria-label="Favoritos" className={classeIcone}>
+              <FiHeart />
+            </Link>
+
+            <Link to={destinoConta} aria-label="Minha conta" className={classeIcone}>
               <FiUser />
             </Link>
 
@@ -81,6 +93,7 @@ export default function Header() {
               )}
             </Link>
 
+            {/* Botão do menu (só no celular) */}
             <button
               type="button"
               aria-label="Abrir menu"
@@ -92,6 +105,7 @@ export default function Header() {
           </div>
         </div>
 
+        {/* Barra de pesquisa */}
         {buscaAberta && (
           <form
             onSubmit={buscar}
@@ -114,6 +128,7 @@ export default function Header() {
           </form>
         )}
 
+        {/* Menu do celular */}
         {menuAberto && (
           <nav
             className="flex flex-col gap-4 border-t border-white/10 px-4 py-4 md:hidden"
