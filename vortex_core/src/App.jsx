@@ -10,6 +10,9 @@ import Login from './paginas/Login'
 import Cadastro from './paginas/Cadastro'
 import Perfil from './paginas/Perfil'
 import Carrinho from './paginas/Carrinho'
+import Favoritos from './paginas/Favoritos'
+import EsqueciSenha from './paginas/EsqueciSenha'
+import RedefinirSenha from './paginas/RedefinirSenha'
 import PedidoConfirmado from './paginas/PedidoConfirmado'
 import NotFound from './paginas/NotFound'
 import Erro500 from './componentes/Erro500'
@@ -22,11 +25,11 @@ import AdminProdutos from './paginas/admin/AdminProdutos'
 import AdminClientes from './paginas/admin/AdminClientes'
 import AdminPerfil from './paginas/admin/AdminPerfil'
 
-
+// Cada <Route> liga um endereço do site a uma página.
 export default function App() {
   return (
     <Routes>
-      
+      {/* Loja (com Header e Footer) */}
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="categorias" element={<Categorias />} />
@@ -35,19 +38,22 @@ export default function App() {
         <Route path="contato" element={<Contato />} />
         <Route path="login" element={<Login />} />
         <Route path="cadastro" element={<Cadastro />} />
+        <Route path="esqueci-senha" element={<EsqueciSenha />} />
+        <Route path="redefinir-senha" element={<RedefinirSenha />} />
         <Route path="erro" element={<Erro500 />} />
 
-        
+        {/* Só para quem está logado */}
         <Route element={<RequireAuth />}>
           <Route path="perfil" element={<Perfil />} />
           <Route path="carrinho" element={<Carrinho />} />
+          <Route path="favoritos" element={<Favoritos />} />
           <Route path="pedido-confirmado" element={<PedidoConfirmado />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
       </Route>
 
-      
+      {/* Painel do administrador */}
       <Route path="admin" element={<AdminLayout />}>
         <Route path="login" element={<AdminLogin />} />
         <Route element={<RequireAdmin />}>

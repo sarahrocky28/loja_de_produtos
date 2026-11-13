@@ -6,14 +6,19 @@ import { botaoClasse, botaoTealClasse, cartaoClasse, inputClasse, labelClasse } 
 import { centavosParaReais, formatarPreco, reaisParaCentavos } from '../../utils/formatarPreco'
 import { urlImagem, aoFalharImagem } from '../../utils/imagem'
 
-const VAZIO = { id: null, nome: '', descricao: '', id_categoria: '', preco: '', estoque: '0', ativo: 1, imagem: null }
+const VAZIO = {
+  id: null, nome: '', descricao: '', id_categoria: '', preco: '', estoque: '0', ativo: 1,
+  imagens: [], // fotos que o produto já tem: { id_imagem, arquivo }
+}
 
 export default function AdminProdutos() {
   const [produtos, setProdutos] = useState(null)
   const [categorias, setCategorias] = useState([])
   const [busca, setBusca] = useState('')
   const [form, setForm] = useState(null) // null = formulário fechado
-  const [arquivo, setArquivo] = useState(null)
+  const [novasFotos, setNovasFotos] = useState([]) // arquivos escolhidos agora
+  const [remover, setRemover] = useState([]) // ids das fotos marcadas para remover
+  const [principal, setPrincipal] = useState(null) // id da foto escolhida como principal
   const [erro, setErro] = useState('')
   const [erroGeral, setErroGeral] = useState(false)
 
@@ -27,10 +32,12 @@ export default function AdminProdutos() {
     api('/admin/categorias').then((d) => setCategorias(d.categorias)).catch(() => {})
   }, [])
 
-  function abrirEdicao(p) {
+  function abrir(produto) {
     setErro('')
-    setArquivo(null)
-    setForm({ ...p, preco: centavosParaReais(p.preco), descricao: p.descricao || '' })
+    setNovasFotos([])
+    setRemover([])
+    setPrincipal(null)
+    setForm(produto ? { ...produto, preco: centavosParaReais(produto.preco), descricao: produto.descricao || '' } : { ...VAZIO })
   }
 
   async function salvar(e) {
@@ -46,7 +53,9 @@ export default function AdminProdutos() {
     fd.append('preco', centavos)
     fd.append('estoque', form.estoque)
     fd.append('ativo', form.ativo)
-    if (arquivo) fd.append('imagem', arquivo)
+    fd.append('remover', JSON.stringify(remover))
+    if (principal) fd.append('principal', principal)
+    novasFotos.forEach((arquivo) => fd.append('imagens', arquivo))
 
     try {
       await api(form.id ? `/admin/produtos/${form.id}` : '/admin/produtos', { method: form.id ? 'PUT' : 'POST', formData: fd })
@@ -57,6 +66,17 @@ export default function AdminProdutos() {
     }
   }
 
+  // Botão rápido da lista
+  async function alternarAtivo(p) {
+    await api(`/admin/produtos/${p.id}`, { method: 'PATCH', corpo: { ativo: !p.ativo } }).catch(() => {})
+    carregar()
+  }
+
+  function alternarRemocao(idImagem) {
+    setRemover((r) => (r.includes(idImagem) ? r.filter((x) => x !== idImagem) : [...r, idImagem]))
+    if (principal === idImagem) setPrincipal(null)
+  }
+
   if (erroGeral) return <Erro500 />
 
   return (
@@ -65,7 +85,7 @@ export default function AdminProdutos() {
         <h1 className="text-2xl font-extrabold uppercase">Produtos</h1>
         <div className="flex gap-2">
           <input value={busca} onChange={(e) => { setBusca(e.target.value); carregar(e.target.value) }} placeholder="Buscar produto" className={`${inputClasse} !w-48`} />
-          <button type="button" onClick={() => { setErro(''); setArquivo(null); setForm({ ...VAZIO }) }} className={botaoClasse}>Cadastrar</button>
+          <button type="button" onClick={() => abrir(null)} className={botaoClasse}>Cadastrar</button>
         </div>
       </div>
 
@@ -86,11 +106,39 @@ export default function AdminProdutos() {
             <span className={labelClasse}>Descrição</span>
             <textarea rows={3} className={inputClasse} value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
           </label>
-          <label className="block">
-            <span className={labelClasse}>Imagem (JPG, PNG ou WEBP, até 3 MB)</span>
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setArquivo(e.target.files[0] || null)} className="text-xs" />
+
+          {/* Fotos que o produto já tem */}
+          {form.imagens.length > 0 && (
+            <div className="sm:col-span-2">
+              <span className={labelClasse}>Fotos atuais</span>
+              <div className="flex flex-wrap gap-3">
+                {form.imagens.map((img, i) => {
+                  const marcada = remover.includes(img.id_imagem)
+                  const ehPrincipal = principal ? principal === img.id_imagem : i === 0 && !marcada
+                  return (
+                    <div key={img.id_imagem} className={`w-24 text-center text-[11px] ${marcada ? 'opacity-40' : ''}`}>
+                      <img src={urlImagem(img.arquivo)} onError={aoFalharImagem} alt="" className={`h-28 w-24 rounded border bg-neutral-900 object-contain ${ehPrincipal ? 'border-[#35dcee]' : 'border-white/20'}`} />
+                      {ehPrincipal && <p className="mt-1 font-bold text-[#35dcee]">Principal</p>}
+                      {!ehPrincipal && !marcada && (
+                        <button type="button" onClick={() => setPrincipal(img.id_imagem)} className="mt-1 underline hover:text-[#35dcee]">Tornar principal</button>
+                      )}
+                      <button type="button" onClick={() => alternarRemocao(img.id_imagem)} className="block w-full underline hover:text-red-400">
+                        {marcada ? 'Desfazer' : 'Remover'}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          <label className="block sm:col-span-2">
+            <span className={labelClasse}>Adicionar fotos (JPG, PNG ou WEBP, até 3 MB cada, no máximo 8)</span>
+            <input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={(e) => setNovasFotos(Array.from(e.target.files))} className="text-xs" />
+            {novasFotos.length > 0 && <p className="mt-1 text-xs text-white/60">{novasFotos.length} foto(s) escolhida(s): {novasFotos.map((f) => f.name).join(', ')}</p>}
           </label>
-          <label className="flex items-center gap-2 self-end text-sm">
+
+          <label className="flex items-center gap-2 text-sm sm:col-span-2">
             <input type="checkbox" checked={form.ativo === 1} onChange={(e) => setForm({ ...form, ativo: e.target.checked ? 1 : 0 })} className="accent-[#35dcee]" />
             Produto ativo (visível na loja)
           </label>
@@ -108,14 +156,19 @@ export default function AdminProdutos() {
       ) : (
         <div className="mt-4 space-y-2">
           {produtos.map((p) => (
-            <article key={p.id} className={`${cartaoClasse} flex items-center gap-4 !p-3 text-sm ${p.ativo ? '' : 'opacity-50'}`}>
+            <article key={p.id} className={`${cartaoClasse} flex flex-wrap items-center gap-4 !p-3 text-sm ${p.ativo ? '' : 'opacity-60'}`}>
               <img src={urlImagem(p.imagem)} onError={aoFalharImagem} alt="" className="h-14 w-12 rounded bg-neutral-900 object-contain" />
-              <div className="flex-1">
+              <div className="min-w-40 flex-1">
                 <p className="font-bold uppercase">{p.nome}</p>
-                <p className="text-white/60">{p.categoria} · estoque {p.estoque}{p.ativo ? '' : ' · inativo'}</p>
+                <p className="text-white/60">{p.categoria} · estoque {p.estoque} · {p.imagens.length} foto(s){p.ativo ? '' : ' · inativo'}</p>
               </div>
               <span className="font-bold text-[#35dcee]">{formatarPreco(p.preco)}</span>
-              <button type="button" onClick={() => abrirEdicao(p)} className="rounded border border-white/30 px-3 py-1 text-xs font-bold uppercase hover:border-[#35dcee]">Editar</button>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => abrir(p)} className="rounded border border-white/30 px-3 py-1 text-xs font-bold uppercase hover:border-[#35dcee]">Editar</button>
+                <button type="button" onClick={() => alternarAtivo(p)} className="rounded border border-white/30 px-3 py-1 text-xs font-bold uppercase hover:border-[#35dcee]">
+                  {p.ativo ? 'Desativar' : 'Ativar'}
+                </button>
+              </div>
             </article>
           ))}
           {produtos.length === 0 && <p className="py-10 text-center text-white/60">Nenhum produto encontrado.</p>}

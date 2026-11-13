@@ -4,7 +4,7 @@ import Erro500 from '../../componentes/Erro500'
 import { botaoClasse, cartaoClasse, inputClasse } from '../../estilos'
 import { formatarPreco } from '../../utils/formatarPreco'
 import { urlImagem, aoFalharImagem } from '../../utils/imagem'
-import { STATUS_PEDIDO, formatarData } from '../../utils/status'
+import { STATUS_PEDIDO, ROTULO_ENTREGA, formatarData } from '../../utils/status'
 
 const ACOES = ['em_separacao', 'enviado', 'entregue', 'cancelado']
 
@@ -31,6 +31,7 @@ function CartaoPedido({ pedido, aoSalvar }) {
         <span className="font-bold text-[#35dcee]">{STATUS_PEDIDO[pedido.status]}</span>
       </div>
       <p className="text-white/70">{pedido.cliente} · {pedido.email_cliente}</p>
+      <p className="text-white/70">Entrega: {ROTULO_ENTREGA[pedido.entrega]}</p>
       <ul className="mt-3 space-y-2">
         {pedido.itens.map((i) => (
           <li key={i.id_produto} className="flex items-center gap-3">

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import Campo from '../componentes/Campo'
+import CampoSenha from '../componentes/CampoSenha'
 import { botaoClasse, cartaoClasse, paginaClasse } from '../estilos'
 
 export default function Login() {
@@ -19,6 +20,7 @@ export default function Login() {
     setEnviando(true)
     try {
       const usuario = await entrar(email, senha)
+      // volta para onde o cliente estava (ex.: o carrinho) ou vai para o início
       navigate(usuario.perfil === 'admin' ? '/admin' : local.state?.de || '/', { replace: true })
     } catch (err) {
       setErro(err.message)
@@ -38,8 +40,8 @@ export default function Login() {
         <form onSubmit={enviar} className={`${cartaoClasse} space-y-4`}>
           <h2 className="text-center text-lg font-bold">Entrar na sua conta</h2>
           <Campo label="E-mail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <Campo label="Senha" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required />
-          <Link to="/contato" className="block text-right text-xs text-white/60 hover:text-[#35dcee]">
+          <CampoSenha label="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} required />
+          <Link to="/esqueci-senha" className="block text-right text-xs text-white/60 hover:text-[#35dcee]">
             Esqueci a conta
           </Link>
           {erro && <p className="text-sm text-red-400">{erro}</p>}

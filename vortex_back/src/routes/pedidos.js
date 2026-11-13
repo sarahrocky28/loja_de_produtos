@@ -53,16 +53,19 @@ router.post('/', async (req, res) => {
 
   // Os valores são sempre calculados aqui, com os preços do banco (nunca confiamos no que vem do navegador)
   const subtotal = itens.reduce((s, i) => s + i.quantidade * i.preco, 0)
-  const { frete, prazoDias } = calcularFrete(subtotal)
+  const entrega = req.body.entrega || 'padrao'
+  const calculo = calcularFrete(subtotal, entrega)
+  if (!calculo) return res.status(400).json({ erro: 'Forma de entrega inválida.' })
+  const { frete, prazoDias } = calculo
   const total = subtotal + frete
 
   const criar = db.transaction(() => {
     const r = db
       .prepare(
-        `INSERT INTO pedidos (id_usuario, id_endereco, subtotal, desconto, frete, total, previsao_entrega)
-         VALUES (?, ?, ?, 0, ?, ?, DATE('now', 'localtime', ?))`
+        `INSERT INTO pedidos (id_usuario, id_endereco, subtotal, desconto, frete, entrega, total, previsao_entrega)
+         VALUES (?, ?, ?, 0, ?, ?, ?, DATE('now', 'localtime', ?))`
       )
-      .run(u.id_usuario, endereco.id_endereco, subtotal, frete, total, `+${prazoDias} days`)
+      .run(u.id_usuario, endereco.id_endereco, subtotal, frete, entrega, total, `+${prazoDias} days`)
     const idPedido = Number(r.lastInsertRowid)
     const inserirItem = db.prepare(
       'INSERT INTO itens_pedido (id_pedido, id_produto, quantidade, preco_unitario) VALUES (?, ?, ?, ?)'

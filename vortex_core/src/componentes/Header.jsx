@@ -19,7 +19,6 @@ export default function Header() {
 
   const { usuario } = useAuth()
   const { quantidade: quantidadeNoCarrinho } = useCart()
-  // Logado: vai para o perfil (ou para o painel, se for administrador). Senão, para o login.
   const destinoConta = usuario ? (usuario.perfil === 'admin' ? '/admin' : '/perfil') : '/login'
 
   function buscar(e) {
@@ -40,23 +39,20 @@ export default function Header() {
 
   return (
     <>
-      {/* Faixa de cima */}
       <div className="bg-[#35dcee] px-2 py-1 text-center text-xs font-bold uppercase tracking-wide text-black sm:text-sm">
         Frete grátis acima de {FRETE_GRATIS_ACIMA} • No centro da sua evolução
       </div>
 
-      <header className="sticky top-0 z-50 bg-[#1a1a1a] text-white">
+      <header className="sticky top-0 z-50 bg-[#000000] text-white">
         <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center px-4 py-3 md:grid-cols-[1fr_auto_1fr] md:px-8">
-          {/* Logo (clicável, leva para o início) */}
           <Link to="/" aria-label="Vortex Core - Início" className="justify-self-start">
             <img
-              src="/logo.png"
+              src="/vortex-core-logo-recortada.png"
               alt="Vortex Core"
               className="h-10 w-auto md:h-12"
             />
           </Link>
 
-          {/* Menu central (só no computador) */}
           <nav className="hidden items-center gap-10 md:flex" aria-label="Principal">
             {links.map((l) => (
               <NavLink key={l.to} to={l.to} end={l.end} className={classeLink}>
@@ -65,7 +61,6 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Ícones */}
           <div className="flex items-center justify-self-end gap-1">
             <Link to="/favoritos" aria-label="Favoritos" className={classeIcone}>
               <FiHeart />
@@ -93,7 +88,6 @@ export default function Header() {
               )}
             </Link>
 
-            {/* Botão do menu (só no celular) */}
             <button
               type="button"
               aria-label="Abrir menu"
@@ -105,7 +99,6 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Barra de pesquisa */}
         {buscaAberta && (
           <form
             onSubmit={buscar}
@@ -128,7 +121,6 @@ export default function Header() {
           </form>
         )}
 
-        {/* Menu do celular */}
         {menuAberto && (
           <nav
             className="flex flex-col gap-4 border-t border-white/10 px-4 py-4 md:hidden"

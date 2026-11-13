@@ -11,3 +11,9 @@ export function formatarData(texto) {
   if (!texto) return ''
   return new Date(texto.replace(' ', 'T')).toLocaleDateString('pt-BR')
 }
+
+export const ROTULO_ENTREGA = {
+  padrao: 'Entrega padrão',
+  expressa: 'Entrega expressa',
+  retirada: 'Retirar na loja',
+}

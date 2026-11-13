@@ -19,7 +19,8 @@ export default function Carrinho() {
   const navigate = useNavigate()
   const [endereco, setEndereco] = useState(ENDERECO_VAZIO)
   const [metodo, setMetodo] = useState('pix')
-  const [config, setConfig] = useState({ frete_fixo: 0, frete_gratis_acima: 0 })
+  const [config, setConfig] = useState({ frete_gratis_acima: 0, opcoes_entrega: [] })
+  const [entrega, setEntrega] = useState('padrao')
   const [erro, setErro] = useState('')
   const [finalizando, setFinalizando] = useState(false)
 
@@ -28,6 +29,7 @@ export default function Carrinho() {
     api('/config').then(setConfig).catch(() => {})
   }, [])
 
+  // Carrinho vazio
   if (itens.length === 0) {
     return (
       <div className={`${paginaClasse} px-4 py-24 text-center`}>
@@ -39,7 +41,10 @@ export default function Carrinho() {
     )
   }
 
-  const frete = subtotal > config.frete_gratis_acima ? 0 : config.frete_fixo
+  // Valor de cada forma de entrega (só a padrão fica grátis acima do valor definido)
+  const valorEntrega = (op) => (op.gratis_acima && subtotal > config.frete_gratis_acima ? 0 : op.valor)
+  const opcaoEscolhida = config.opcoes_entrega.find((o) => o.id === entrega)
+  const frete = opcaoEscolhida ? valorEntrega(opcaoEscolhida) : 0
   const total = subtotal + frete
 
   async function tentar(acao) {
@@ -57,9 +62,9 @@ export default function Carrinho() {
     setFinalizando(true)
     try {
       await api('/endereco', { method: 'PUT', corpo: endereco })
-      const d = await api('/pedidos', { method: 'POST', corpo: { metodo } })
+      const d = await api('/pedidos', { method: 'POST', corpo: { metodo, entrega } })
       if (d.init_point) {
-        window.location.href = d.init_point 
+        window.location.href = d.init_point // vai para o pagamento no Mercado Pago
       } else {
         navigate(`/pedido-confirmado?pedido=${d.id_pedido}`, { state: { aviso: d.aviso } })
       }
@@ -78,7 +83,7 @@ export default function Carrinho() {
 
         <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_360px]">
           <div className="space-y-8">
-            
+            {/* Itens */}
             <div className="space-y-3">
               {itens.map((i) => (
                 <article key={i.id} className={`${cartaoClasse} flex items-center gap-4 !p-3`}>
@@ -97,15 +102,33 @@ export default function Carrinho() {
               ))}
             </div>
 
-            
+            {/* Endereço */}
             <div>
               <h2 className="mb-3 text-lg font-extrabold uppercase">Endereço</h2>
               <EnderecoForm valor={endereco} onChange={setEndereco} />
             </div>
           </div>
 
-          
+          {/* Pagamento e resumo */}
           <aside className="space-y-4">
+            <div className={cartaoClasse}>
+              <h2 className="mb-3 text-sm font-extrabold uppercase">Forma de entrega</h2>
+              <div className="space-y-2 text-sm">
+                {config.opcoes_entrega.map((op) => (
+                  <label key={op.id} className="flex cursor-pointer items-start gap-2">
+                    <input type="radio" name="entrega" value={op.id} checked={entrega === op.id} onChange={() => setEntrega(op.id)} className="mt-1 accent-[#35dcee]" />
+                    <span className="flex-1">
+                      {op.rotulo}
+                      <span className="block text-xs text-white/60">
+                        {op.id === 'retirada' ? 'Pronto em 1 dia' : `Chega em até ${op.prazo_dias} dias`}
+                      </span>
+                    </span>
+                    <span className="font-bold">{valorEntrega(op) === 0 ? 'Grátis' : formatarPreco(valorEntrega(op))}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
             <div className={cartaoClasse}>
               <h2 className="mb-3 text-sm font-extrabold uppercase">Formas de pagamento</h2>
               <div className="space-y-2 text-sm">

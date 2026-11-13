@@ -45,8 +45,8 @@ export default function Home() {
     <div className="bg-black text-white">
       
       <section className="bg-black">
-        <img
-          src="/hero.png"
+        <imgv
+          src="/vortex_faixa.png"
           alt="Vortex Core - Whey Protein"
           className="mx-auto w-full max-w-7xl object-cover"
         />
