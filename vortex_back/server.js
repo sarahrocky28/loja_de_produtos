@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config({ quiet: true })
 
 if (!process.env.JWT_SECRET) {
   console.error('Faltou o JWT_SECRET. Copie o arquivo .env.example para .env e preencha.')
@@ -7,21 +7,30 @@ if (!process.env.JWT_SECRET) {
 
 const express = require('express')
 const cors = require('cors')
-const fs = require('fs')
-const path = require('path')
 const { cfg, opcoesEntrega } = require('./src/config')
-
-require('./src/db') // abre (e, se preciso, cria) o banco
+const db = require('./src/db') // abre (e, se preciso, cria) o banco
 
 const app = express()
 const front = cfg().frontUrl
 
-app.use(cors({ origin: [front, front.replace('localhost', '127.0.0.1')] }))
+// Endereços do site que podem chamar esta API (CORS_ORIGINS aceita vários, separados por vírgula)
+const origens = [front, front.replace('localhost', '127.0.0.1'), ...(process.env.CORS_ORIGINS || '').split(',')]
+  .map((o) => o.trim())
+  .filter(Boolean)
+app.use(cors({ origin: origens }))
 app.use(express.json())
+app.use((req, res, next) => {
+  req.body ||= {} // pedido sem corpo JSON: trata como vazio (e as rotas respondem 400)
+  next()
+})
 
-const pastaUploads = path.join(__dirname, 'uploads')
-fs.mkdirSync(pastaUploads, { recursive: true })
-app.use('/uploads', express.static(pastaUploads)) // imagens dos produtos
+// Espera o banco ficar pronto antes de atender qualquer pedido
+app.use(async (req, res, next) => {
+  await db.pronto
+  next()
+})
+
+app.get('/', (req, res) => res.json({ ok: true, api: 'Vortex Core' }))
 
 app.get('/api/config', (req, res) => {
   const c = cfg()
@@ -52,5 +61,9 @@ app.use((err, req, res, next) => {
   res.status(500).json({ erro: 'Erro interno do servidor.' })
 })
 
-const porta = process.env.PORT || 3001
-app.listen(porta, () => console.log(`API da Vortex rodando em http://localhost:${porta}`))
+// No Vercel o app é exportado; no seu computador ele liga o servidor
+module.exports = app
+if (require.main === module) {
+  const porta = process.env.PORT || 3001
+  app.listen(porta, () => console.log(`API da Vortex rodando em http://localhost:${porta}`))
+}

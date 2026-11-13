@@ -17,7 +17,7 @@ function grupoDaCategoria(categoria) {
 
 const COLUNAS = `p.id_produto AS id, p.nome, p.descricao, p.preco, p.estoque, p.imagem, c.nome AS categoria`
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const condicoes = ['p.ativo = 1']
   const valores = []
 
@@ -33,28 +33,25 @@ router.get('/', (req, res) => {
   }
   const limite = Math.min(Number(req.query.limite) || 100, 100)
 
-  const produtos = db
-    .prepare(
-      `SELECT ${COLUNAS} FROM produtos p JOIN categorias c ON c.id_categoria = p.id_categoria
-       WHERE ${condicoes.join(' AND ')} ORDER BY p.id_produto LIMIT ?`
-    )
-    .all(...valores, limite)
+  const produtos = await db.all(
+    `SELECT ${COLUNAS} FROM produtos p JOIN categorias c ON c.id_categoria = p.id_categoria
+     WHERE ${condicoes.join(' AND ')} ORDER BY p.id_produto LIMIT ?`,
+    [...valores, limite]
+  )
   res.json({ produtos })
 })
 
-router.get('/:id', (req, res) => {
-  const produto = db
-    .prepare(
-      `SELECT ${COLUNAS} FROM produtos p JOIN categorias c ON c.id_categoria = p.id_categoria
-       WHERE p.id_produto = ? AND p.ativo = 1`
-    )
-    .get(req.params.id)
+router.get('/:id', async (req, res) => {
+  const produto = await db.get(
+    `SELECT ${COLUNAS} FROM produtos p JOIN categorias c ON c.id_categoria = p.id_categoria
+     WHERE p.id_produto = ? AND p.ativo = 1`,
+    [req.params.id]
+  )
   if (!produto) return res.status(404).json({ erro: 'Produto não encontrado.' })
   const grupo = grupoDaCategoria(produto.categoria)
-  const imagens = db
-    .prepare('SELECT arquivo FROM produto_imagens WHERE id_produto = ? ORDER BY ordem, id_imagem')
-    .all(produto.id)
-    .map((i) => i.arquivo)
+  const imagens = (
+    await db.all('SELECT arquivo FROM produto_imagens WHERE id_produto = ? ORDER BY ordem, id_imagem', [produto.id])
+  ).map((i) => i.arquivo)
   res.json({ produto: { ...produto, imagens, grupo: grupo ? NOME_GRUPO[grupo] : produto.categoria } })
 })
 

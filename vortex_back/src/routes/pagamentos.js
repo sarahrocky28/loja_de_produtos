@@ -8,15 +8,18 @@ const router = express.Router()
 
 // O Mercado Pago avisa aqui quando um pagamento muda de status.
 // Não confiamos no que chega: sempre perguntamos o status real ao Mercado Pago.
+// (Só respondemos depois de processar: em servidores como o Vercel, o que fica pendente depois da resposta pode ser cortado.)
 router.post('/webhook', async (req, res) => {
-  res.sendStatus(200)
   try {
     const tipo = req.body?.type || req.query.type || req.query.topic
     const id = req.body?.data?.id || req.query['data.id'] || req.query.id
-    if (tipo !== 'payment' || !id || !mp.configurado()) return
-    aplicarPagamento(await mp.buscarPagamento(id))
+    if (tipo === 'payment' && id && mp.configurado()) {
+      await aplicarPagamento(await mp.buscarPagamento(id))
+    }
+    res.sendStatus(200)
   } catch (e) {
     console.error('Erro no webhook:', e?.message || e)
+    res.sendStatus(500) // o Mercado Pago tenta de novo mais tarde
   }
 })
 
@@ -24,9 +27,7 @@ router.post('/webhook', async (req, res) => {
 // Funciona mesmo sem webhook (por exemplo, rodando só no seu computador).
 router.post('/sincronizar', exigirLogin, async (req, res) => {
   const idPedido = Number(req.body.id_pedido)
-  const pedido = db
-    .prepare('SELECT * FROM pedidos WHERE id_pedido = ? AND id_usuario = ?')
-    .get(idPedido, req.usuario.id_usuario)
+  const pedido = await db.get('SELECT * FROM pedidos WHERE id_pedido = ? AND id_usuario = ?', [idPedido, req.usuario.id_usuario])
   if (!pedido) return res.status(404).json({ erro: 'Pedido não encontrado.' })
 
   if (mp.configurado()) {
@@ -34,15 +35,16 @@ router.post('/sincronizar', exigirLogin, async (req, res) => {
       const pg = req.body.payment_id
         ? await mp.buscarPagamento(req.body.payment_id)
         : await mp.buscarPagamentoPorPedido(idPedido)
-      if (pg && String(pg.external_reference) === String(idPedido)) aplicarPagamento(pg)
+      if (pg && String(pg.external_reference) === String(idPedido)) await aplicarPagamento(pg)
     } catch (e) {
       console.error('Erro ao sincronizar pagamento:', e?.message || e)
     }
   }
-  const atual = db.prepare('SELECT id_pedido, status, total FROM pedidos WHERE id_pedido = ?').get(idPedido)
-  const pagamento = db
-    .prepare('SELECT metodo, status FROM pagamentos WHERE id_pedido = ? ORDER BY id_pagamento DESC LIMIT 1')
-    .get(idPedido)
+  const atual = await db.get('SELECT id_pedido, status, total FROM pedidos WHERE id_pedido = ?', [idPedido])
+  const pagamento = await db.get(
+    'SELECT metodo, status FROM pagamentos WHERE id_pedido = ? ORDER BY id_pagamento DESC LIMIT 1',
+    [idPedido]
+  )
   res.json({ pedido: atual, pagamento })
 })
 

@@ -5,6 +5,7 @@ import Erro500 from '../../componentes/Erro500'
 import { botaoClasse, botaoTealClasse, cartaoClasse, inputClasse, labelClasse } from '../../estilos'
 import { centavosParaReais, formatarPreco, reaisParaCentavos } from '../../utils/formatarPreco'
 import { urlImagem, aoFalharImagem } from '../../utils/imagem'
+import { enviarImagem } from '../../utils/uploadImagem'
 
 const VAZIO = {
   id: null, nome: '', descricao: '', id_categoria: '', preco: '', estoque: '0', ativo: 1,
@@ -20,6 +21,7 @@ export default function AdminProdutos() {
   const [remover, setRemover] = useState([]) // ids das fotos marcadas para remover
   const [principal, setPrincipal] = useState(null) // id da foto escolhida como principal
   const [erro, setErro] = useState('')
+  const [salvando, setSalvando] = useState(false)
   const [erroGeral, setErroGeral] = useState(false)
 
   function carregar(termo = busca) {
@@ -46,23 +48,28 @@ export default function AdminProdutos() {
     const centavos = reaisParaCentavos(form.preco)
     if (Number.isNaN(centavos)) return setErro('Preço inválido. Use o formato 129,90.')
 
-    const fd = new FormData()
-    fd.append('nome', form.nome)
-    fd.append('descricao', form.descricao)
-    fd.append('id_categoria', form.id_categoria)
-    fd.append('preco', centavos)
-    fd.append('estoque', form.estoque)
-    fd.append('ativo', form.ativo)
-    fd.append('remover', JSON.stringify(remover))
-    if (principal) fd.append('principal', principal)
-    novasFotos.forEach((arquivo) => fd.append('imagens', arquivo))
-
+    setSalvando(true)
     try {
-      await api(form.id ? `/admin/produtos/${form.id}` : '/admin/produtos', { method: form.id ? 'PUT' : 'POST', formData: fd })
+      // 1) as fotos novas vão direto para o Cloudinary; 2) o servidor recebe só os endereços delas
+      const urls = await Promise.all(novasFotos.map(enviarImagem))
+      const corpo = {
+        nome: form.nome,
+        descricao: form.descricao,
+        id_categoria: Number(form.id_categoria),
+        preco: centavos,
+        estoque: Number(form.estoque),
+        ativo: form.ativo,
+        remover,
+        principal,
+        imagens_novas: urls,
+      }
+      await api(form.id ? `/admin/produtos/${form.id}` : '/admin/produtos', { method: form.id ? 'PUT' : 'POST', corpo })
       setForm(null)
       carregar()
     } catch (err) {
       setErro(err.message)
+    } finally {
+      setSalvando(false)
     }
   }
 
@@ -144,7 +151,7 @@ export default function AdminProdutos() {
           </label>
           {erro && <p className="text-sm text-red-400 sm:col-span-2">{erro}</p>}
           <div className="flex gap-2 sm:col-span-2">
-            <button type="submit" className={botaoTealClasse}>Salvar</button>
+            <button type="submit" disabled={salvando} className={botaoTealClasse}>{salvando ? 'Salvando...' : 'Salvar'}</button>
             <button type="button" onClick={() => setForm(null)} className="rounded border border-white/30 px-4 py-2 text-sm font-bold uppercase">Cancelar</button>
           </div>
         </form>

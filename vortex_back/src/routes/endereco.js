@@ -8,12 +8,12 @@ router.use(exigirLogin)
 const SELECT = `SELECT id_endereco, destinatario, cep, logradouro, numero, complemento, bairro, cidade, uf
                 FROM enderecos WHERE id_usuario = ? AND padrao = 1`
 
-router.get('/', (req, res) => {
-  res.json({ endereco: db.prepare(SELECT).get(req.usuario.id_usuario) || null })
+router.get('/', async (req, res) => {
+  res.json({ endereco: (await db.get(SELECT, [req.usuario.id_usuario])) || null })
 })
 
 // Cria ou atualiza o endereço principal do usuário
-router.put('/', (req, res) => {
+router.put('/', async (req, res) => {
   const b = req.body
   const dados = {
     destinatario: String(b.destinatario || '').trim(),
@@ -31,21 +31,22 @@ router.put('/', (req, res) => {
   if (!/^\d{8}$/.test(dados.cep)) return res.status(400).json({ erro: 'CEP inválido (8 números).' })
   if (!/^[A-Z]{2}$/.test(dados.uf)) return res.status(400).json({ erro: 'Estado inválido (use a sigla, ex.: SP).' })
 
-  const existente = db.prepare(SELECT).get(req.usuario.id_usuario)
+  const existente = await db.get(SELECT, [req.usuario.id_usuario])
+  const valores = [dados.destinatario, dados.cep, dados.logradouro, dados.numero, dados.complemento, dados.bairro, dados.cidade, dados.uf]
   if (existente) {
-    db.prepare(
+    await db.run(
       `UPDATE enderecos SET destinatario=?, cep=?, logradouro=?, numero=?, complemento=?, bairro=?, cidade=?, uf=?
-       WHERE id_endereco = ?`
-    ).run(dados.destinatario, dados.cep, dados.logradouro, dados.numero, dados.complemento,
-      dados.bairro, dados.cidade, dados.uf, existente.id_endereco)
+       WHERE id_endereco = ?`,
+      [...valores, existente.id_endereco]
+    )
   } else {
-    db.prepare(
+    await db.run(
       `INSERT INTO enderecos (id_usuario, destinatario, cep, logradouro, numero, complemento, bairro, cidade, uf, padrao)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`
-    ).run(req.usuario.id_usuario, dados.destinatario, dados.cep, dados.logradouro, dados.numero,
-      dados.complemento, dados.bairro, dados.cidade, dados.uf)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+      [req.usuario.id_usuario, ...valores]
+    )
   }
-  res.json({ endereco: db.prepare(SELECT).get(req.usuario.id_usuario) })
+  res.json({ endereco: await db.get(SELECT, [req.usuario.id_usuario]) })
 })
 
 module.exports = router
