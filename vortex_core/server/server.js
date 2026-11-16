@@ -1,4 +1,5 @@
-require('dotenv').config({ quiet: true })
+const path = require('path')
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env'), quiet: true })
 
 if (!process.env.JWT_SECRET) {
   console.error('Faltou o JWT_SECRET. Copie o arquivo .env.example para .env e preencha.')
@@ -65,5 +66,8 @@ app.use((err, req, res, next) => {
 module.exports = app
 if (require.main === module) {
   const porta = process.env.PORT || 3001
-  app.listen(porta, () => console.log(`API da Vortex rodando em http://localhost:${porta}`))
+  app.listen(porta, (erro) => {
+    if (erro) return console.error(`Não deu para ligar a API na porta ${porta}: ${erro.code} (já tem outro servidor nela?)`)
+    console.log(`API da Vortex rodando em http://localhost:${porta}`)
+  })
 }
